@@ -8,7 +8,7 @@ import { CartItemRow } from '@/components/cart/CartItemRow';
 import { Button } from '@/components/ui/Button';
 import { BackButton } from '@/components/ui/BackButton';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { formatCurrency, DELIVERY_TYPE_LABELS, PAYMENT_METHOD_LABELS } from '@/lib/format';
+import { formatCurrency, formatPhone, DELIVERY_TYPE_LABELS, PAYMENT_METHOD_LABELS } from '@/lib/format';
 import { slugApi } from '@/lib/api';
 import { getCartToken, clearCartToken } from '@/lib/cart-token';
 import { getActiveOrder, setActiveOrder } from '@/lib/active-order';
@@ -54,6 +54,9 @@ export default function CartPage({ params }: Props) {
       const result = await slugApi(slug).checkout(token, form);
       clearCartToken(slug);
       setActiveOrder(slug, result.order_uuid);
+      if (form.customer_name?.trim()) {
+        localStorage.setItem('customer_chat_name', form.customer_name.trim());
+      }
       router.push(`/${slug}/order/${result.order_uuid}`);
     } catch (e: any) {
       setError(e?.response?.data?.message ?? 'Erro ao finalizar pedido.');
@@ -174,8 +177,11 @@ export default function CartPage({ params }: Props) {
               <label className="text-xs font-medium text-gray-600 block mb-1.5">Telefone (opcional)</label>
               <input
                 value={form.customer_phone ?? ''}
-                onChange={(e) => setForm((f) => ({ ...f, customer_phone: e.target.value }))}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, customer_phone: formatPhone(e.target.value) }))
+                }
                 placeholder="(00) 00000-0000"
+                inputMode="tel"
                 className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[var(--color-primary)] transition-colors"
               />
             </div>
@@ -229,6 +235,8 @@ export default function CartPage({ params }: Props) {
                   value={form.table_number ?? ''}
                   onChange={(e) => setForm((f) => ({ ...f, table_number: e.target.value }))}
                   placeholder="Ex: 05"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-[var(--color-primary)] transition-colors"
                 />
               </div>

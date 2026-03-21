@@ -32,9 +32,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const data = await fetchEstablishment(slug);
   const name: string = data?.workspace?.name ?? 'Cardápio Digital';
+  const logo: string | null = data?.workspace?.logo ?? null;
   return {
     title: name,
     description: `Faça seu pedido em ${name}`,
+    icons: logo ? { icon: logo, apple: logo } : undefined,
   };
 }
 

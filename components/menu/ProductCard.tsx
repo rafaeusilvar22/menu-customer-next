@@ -43,6 +43,7 @@ export function ProductCard({ product, onSelect }: Props) {
             src={product.image_url}
             alt={product.name}
             fill
+            sizes="80px"
             className="object-cover"
           />
         ) : (

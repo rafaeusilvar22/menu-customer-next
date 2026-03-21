@@ -13,15 +13,25 @@ export function EstablishmentHeader({ workspace }: Props) {
     <div className="relative">
       {/* Cover image area */}
       <div className="relative w-full h-44 lg:h-64 bg-[var(--color-secondary)] overflow-hidden">
-        {workspace.logo && (
+        {workspace.banner ? (
+          <Image
+            src={workspace.banner}
+            alt={`Banner ${workspace.name}`}
+            fill
+            sizes="100vw"
+            className="object-cover"
+            priority
+          />
+        ) : workspace.logo ? (
           <Image
             src={workspace.logo}
             alt={workspace.name}
             fill
+            sizes="100vw"
             className="object-cover opacity-25"
             priority
           />
-        )}
+        ) : null}
         {/* Gradient scrim */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
 
@@ -48,6 +58,7 @@ export function EstablishmentHeader({ workspace }: Props) {
                 src={workspace.logo}
                 alt={workspace.name}
                 fill
+                sizes="64px"
                 className="object-cover"
               />
             ) : (

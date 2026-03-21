@@ -7,6 +7,6 @@ export function useMenu(slug: string) {
   return useQuery({
     queryKey: ['menu', slug],
     queryFn: () => slugApi(slug).getMenu(),
-    staleTime: 2 * 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 }

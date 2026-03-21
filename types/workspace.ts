@@ -24,7 +24,9 @@ export interface Workspace {
   uuid: string;
   name: string;
   logo: string;
+  banner: string | null;
   description: string;
+  about: string | null;
   phone: string;
   email: string;
   address: string;

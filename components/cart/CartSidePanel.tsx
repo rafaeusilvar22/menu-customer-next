@@ -75,6 +75,7 @@ export function CartSidePanel({ slug, activeOrder }: Props) {
                       src={item.product_image_url}
                       alt={item.product_name}
                       fill
+                      sizes="44px"
                       className="object-cover"
                     />
                   </div>

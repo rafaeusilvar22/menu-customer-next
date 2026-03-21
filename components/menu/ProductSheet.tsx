@@ -96,6 +96,7 @@ export function ProductSheet({ product, slug, hasActiveOrder, onClose, onAdded }
                 src={product.image_url}
                 alt={product.name}
                 fill
+                sizes="100vw"
                 className="object-cover"
                 priority
               />

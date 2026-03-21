@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useOrderChat } from '@/hooks/useOrderChat';
 import { MessageBubble } from './MessageBubble';
-import { Button } from '@/components/ui/Button';
 import { OrderStatus } from '@/types/order';
 
 interface Props {
@@ -36,16 +35,12 @@ function SendIcon() {
 
 export function OrderChat({ slug, order_uuid, orderStatus }: Props) {
   const [senderName, setSenderName] = useState('');
-  const [nameSet, setNameSet] = useState(false);
   const [input, setInput] = useState('');
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem(CUSTOMER_NAME_KEY);
-    if (stored) {
-      setSenderName(stored);
-      setNameSet(true);
-    }
+    setSenderName(stored?.trim() || 'Cliente');
   }, []);
 
   const { messages, sendMessage } = useOrderChat(slug, order_uuid, senderName);
@@ -56,44 +51,11 @@ export function OrderChat({ slug, order_uuid, orderStatus }: Props) {
 
   const isClosed = orderStatus === 'delivered' || orderStatus === 'cancelled';
 
-  const handleSaveName = () => {
-    if (!senderName.trim()) return;
-    localStorage.setItem(CUSTOMER_NAME_KEY, senderName.trim());
-    setNameSet(true);
-  };
-
   const handleSend = () => {
     if (!input.trim() || isClosed) return;
     sendMessage(input.trim());
     setInput('');
   };
-
-  if (!nameSet) {
-    return (
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div className="bg-(--color-primary) px-4 py-3.5 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-white">
-            <ChatIcon />
-          </div>
-          <p className="font-semibold text-white text-sm">Chat com o estabelecimento</p>
-        </div>
-
-        <div className="p-5">
-          <p className="text-sm text-gray-500 mb-4">Como podemos te chamar no chat?</p>
-          <input
-            value={senderName}
-            onChange={(e) => setSenderName(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
-            placeholder="Seu nome"
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm mb-3 focus:outline-none focus:ring-2 focus:ring-(--color-primary)/30 focus:border-(--color-primary) transition-all"
-          />
-          <Button onClick={handleSaveName} className="w-full">
-            Entrar no chat
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">

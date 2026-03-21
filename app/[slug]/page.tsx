@@ -11,7 +11,7 @@ import { EstablishmentHeader } from '@/components/menu/EstablishmentHeader';
 import { CategoryTabs } from '@/components/menu/CategoryTabs';
 import { ProductCard } from '@/components/menu/ProductCard';
 import { ProductSheet } from '@/components/menu/ProductSheet';
-import { BusinessHoursAccordion } from '@/components/menu/BusinessHoursAccordion';
+import { EstablishmentAbout } from '@/components/menu/EstablishmentAbout';
 import { ActiveOrderBanner } from '@/components/menu/ActiveOrderBanner';
 import { CartSidePanel } from '@/components/cart/CartSidePanel';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -87,9 +87,12 @@ export default function MenuPage({ params }: Props) {
         <div className="lg:grid lg:grid-cols-[1fr_380px]">
           {/* Left column: categories + products */}
           <div className="min-w-0">
-            {/* Business hours */}
-            {establishment.data && businessHours.data && businessHours.data.length > 0 && (
-              <BusinessHoursAccordion businessHours={businessHours.data} />
+            {/* Establishment info */}
+            {establishment.data && (
+              <EstablishmentAbout
+                workspace={establishment.data}
+                businessHours={businessHours.data ?? []}
+              />
             )}
 
             {/* Category tabs — sticky */}

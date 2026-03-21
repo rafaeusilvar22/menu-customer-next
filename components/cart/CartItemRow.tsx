@@ -24,6 +24,7 @@ export function CartItemRow({ item, slug }: Props) {
               src={item.product_image_url}
               alt={item.product_name}
               fill
+              sizes="56px"
               className="object-cover"
             />
           </div>
