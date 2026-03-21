@@ -281,17 +281,6 @@ export default function CartPage({ params }: Props) {
                   <p className="text-xs text-red-500 mb-2">{geoError}</p>
                 )}
 
-                {form.delivery_latitude && form.delivery_longitude && (
-                  <p className="text-xs text-gray-400 mb-1.5 flex items-center gap-1">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
-                      <circle cx="12" cy="10" r="3" />
-                      <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z" />
-                    </svg>
-                    <span>{form.delivery_latitude.toFixed(5)}, {form.delivery_longitude.toFixed(5)}</span>
-                    {geocodeStatus === 'loading' && <span className="text-[var(--color-primary)]">buscando...</span>}
-                    {geocodeStatus === 'success' && geoStatus !== 'success' && <span className="text-green-500">✓</span>}
-                  </p>
-                )}
 
                 <input
                   value={form.delivery_address ?? ''}
