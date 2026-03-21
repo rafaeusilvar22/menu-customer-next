@@ -1,26 +1,61 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --color-primary: #f97316;
+  --color-secondary: #1e293b;
+  --color-emphasis: #ea580c;
+  --background: #f9fafb;
   --foreground: #171717;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Bottom sheet slide-up */
+@keyframes sheet-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.animate-sheet-up {
+  animation: sheet-up 300ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+/* Cart button spring entrance */
+@keyframes cart-spring {
+  0%   { transform: translateY(100%) scale(0.9); opacity: 0; }
+  60%  { transform: translateY(-4px) scale(1.02); opacity: 1; }
+  80%  { transform: translateY(2px) scale(0.99); }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+.animate-cart-spring {
+  animation: cart-spring 400ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Overlay fade */
+@keyframes overlay-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.animate-overlay-fade {
+  animation: overlay-fade 200ms ease forwards;
+}
+
+/* iOS safe area bottom padding */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 1.5rem);
 }
