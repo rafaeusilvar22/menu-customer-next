@@ -1,13 +1,34 @@
 import Image from 'next/image';
-import { Workspace } from '@/types/workspace';
+import { Workspace, BusinessHours } from '@/types/workspace';
 import { formatCurrency } from '@/lib/format';
 
 interface Props {
   workspace: Workspace;
+  businessHours?: BusinessHours[];
 }
 
-export function EstablishmentHeader({ workspace }: Props) {
-  const isOpen = workspace.status === 'active';
+export function EstablishmentHeader({ workspace, businessHours = [] }: Props) {
+  const now = new Date();
+  const today = now.getDay();
+  const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+  let isOpen: boolean;
+  if (workspace.status !== 'active') {
+    isOpen = false;
+  } else if (businessHours.length === 0) {
+    isOpen = true;
+  } else {
+    const todayEntry = businessHours.find((bh) => bh.day_of_week === today);
+    if (!todayEntry) {
+      isOpen = true;
+    } else if (todayEntry.is_closed) {
+      isOpen = false;
+    } else {
+      const afterOpen = !todayEntry.open_time || currentTime >= todayEntry.open_time;
+      const beforeClose = !todayEntry.close_time || currentTime <= todayEntry.close_time;
+      isOpen = afterOpen && beforeClose;
+    }
+  }
 
   return (
     <div className="relative">

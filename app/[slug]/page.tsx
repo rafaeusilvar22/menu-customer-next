@@ -78,7 +78,7 @@ export default function MenuPage({ params }: Props) {
           </div>
         </div>
       ) : establishment.data ? (
-        <EstablishmentHeader workspace={establishment.data} />
+        <EstablishmentHeader workspace={establishment.data} businessHours={businessHours.data ?? []} />
       ) : null}
 
       {/* Constrained content area */}
