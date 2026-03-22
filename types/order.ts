@@ -55,4 +55,13 @@ export interface CheckoutPayload {
   delivery_longitude?: number;
   notes?: string;
   table_number?: string;
+  coupon_code?: string;
+}
+
+export interface CouponValidationResult {
+  code: string;
+  type: 'percentage' | 'fixed';
+  value: number;
+  discount_amount: number;
+  final_amount: number;
 }

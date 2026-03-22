@@ -44,4 +44,6 @@ export const slugApi = (slug: string) => ({
     api.delete(`/public/${slug}/cart/${token}`).then((r) => r.data.data),
   checkout: (token: string, body: object) =>
     api.post(`/public/${slug}/cart/${token}/checkout`, body).then((r) => r.data.data),
+  validateCoupon: (body: { code: string; order_total: number; customer_phone?: string }) =>
+    api.post(`/public/${slug}/validate-coupon`, body).then((r) => r.data.data),
 });
