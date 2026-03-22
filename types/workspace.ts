@@ -44,4 +44,7 @@ export interface Workspace {
   avg_preparation_time: number | null;
   min_order_amount: number | null;
   accepted_payment_methods: string[];
+  latitude: number | null;
+  longitude: number | null;
+  delivery_radius_km: number | null;
 }

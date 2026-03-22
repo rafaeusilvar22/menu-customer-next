@@ -87,6 +87,20 @@ export function CartSidePanel({ slug, activeOrder }: Props) {
                       {formatCurrency(item.subtotal)}
                     </p>
                   </div>
+                  {(item.addons ?? []).length > 0 && (
+                    <div className="mt-0.5 space-y-0.5">
+                      {(item.addons ?? []).map((addon) => (
+                        <div key={addon.id} className="flex items-center justify-between">
+                          <span className="text-xs text-gray-400">
+                            + {addon.name}{addon.quantity > 1 ? ` ×${addon.quantity}` : ''}
+                          </span>
+                          {addon.price > 0 && (
+                            <span className="text-xs text-gray-400">+{formatCurrency(addon.subtotal)}</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   {item.notes && <p className="text-xs text-gray-400 line-clamp-1 mt-0.5">Obs: {item.notes}</p>}
                   <div className="flex items-center justify-between mt-2">
                     <QuantitySelector
@@ -116,7 +130,7 @@ export function CartSidePanel({ slug, activeOrder }: Props) {
           </div>
           <Button
             onClick={() => router.push(`/${slug}/cart`)}
-            className="w-full py-3.5 rounded-xl text-base"
+            className="w-full py-3.5 rounded-2xl text-base"
           >
             Finalizar pedido
           </Button>

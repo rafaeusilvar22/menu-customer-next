@@ -93,13 +93,13 @@ export function EstablishmentAbout({ workspace, businessHours }: Props) {
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
-            className="absolute inset-0 bg-black/50 animate-overlay-fade"
+            className="absolute inset-0 bg-black/40 animate-overlay-fade"
             onClick={() => setOpen(false)}
           />
 
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm animate-sheet-up overflow-hidden">
+          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm animate-sheet-up overflow-hidden">
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
               <div className="flex items-center gap-2 font-semibold text-gray-800">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-primary)]">
                   <circle cx="12" cy="12" r="10" />
@@ -111,7 +111,7 @@ export function EstablishmentAbout({ workspace, businessHours }: Props) {
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Fechar"
-                className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors"
+                className="w-7 h-7 rounded-full bg-gray-100/80 flex items-center justify-center text-gray-400 hover:bg-gray-200 transition-colors"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" />
@@ -121,7 +121,7 @@ export function EstablishmentAbout({ workspace, businessHours }: Props) {
             </div>
 
             {/* Content */}
-            <div className="divide-y divide-gray-50 max-h-[70vh] overflow-y-auto">
+            <div className="divide-y divide-gray-50/80 max-h-[70vh] overflow-y-auto">
 
               {/* About */}
               {workspace.about && (
@@ -241,7 +241,7 @@ export function EstablishmentAbout({ workspace, businessHours }: Props) {
                       {workspace.accepted_payment_methods.map((method) => (
                         <span
                           key={method}
-                          className="inline-flex items-center text-xs bg-gray-100 text-gray-700 rounded-full px-2.5 py-1 font-medium"
+                          className="inline-flex items-center text-xs bg-[var(--color-primary)]/8 text-[var(--color-primary)] rounded-full px-2.5 py-1 font-medium"
                         >
                           {PAYMENT_LABELS[method] ?? method}
                         </span>

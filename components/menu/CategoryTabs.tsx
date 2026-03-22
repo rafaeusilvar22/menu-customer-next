@@ -24,14 +24,14 @@ export function CategoryTabs({ categories, activeCategory, onSelect }: Props) {
   if (categories.length === 0) return null;
 
   return (
-    <div className="flex overflow-x-auto scrollbar-hide bg-white border-b border-gray-200 sticky top-0 z-20">
+    <div className="flex overflow-x-auto scrollbar-hide bg-white border-b border-gray-100 sticky top-0 z-20 px-3 gap-1 py-2">
       {/* Todos tab */}
       <button
         onClick={() => onSelect(null)}
-        className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+        className={`flex-shrink-0 px-4 py-1.5 text-sm font-medium rounded-full transition-all whitespace-nowrap ${
           activeCategory === null
-            ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
-            : 'border-transparent text-gray-500'
+            ? 'bg-[var(--color-primary)] text-white shadow-sm'
+            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
         }`}
       >
         Todos
@@ -44,10 +44,10 @@ export function CategoryTabs({ categories, activeCategory, onSelect }: Props) {
             key={cat.uuid}
             ref={(el) => { tabRefs.current[cat.uuid] = el; }}
             onClick={() => onSelect(cat.uuid)}
-            className={`flex-shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+            className={`flex-shrink-0 px-4 py-1.5 text-sm font-medium rounded-full transition-all whitespace-nowrap ${
               isActive
-                ? 'border-[var(--color-primary)] text-[var(--color-primary)]'
-                : 'border-transparent text-gray-500'
+                ? 'bg-[var(--color-primary)] text-white shadow-sm'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
             }`}
           >
             {cat.name}

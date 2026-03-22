@@ -186,6 +186,7 @@ export default function MenuPage({ params }: Props) {
         hasActiveOrder={!!hasActiveOrder}
         onClose={() => setSelectedProduct(null)}
         onAdded={() => setSelectedProduct(null)}
+        onSelectProduct={setSelectedProduct}
       />
     </div>
   );

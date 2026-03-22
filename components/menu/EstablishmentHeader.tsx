@@ -80,7 +80,7 @@ export function EstablishmentHeader({ workspace }: Props) {
         {(workspace.delivery_enabled || workspace.avg_preparation_time || workspace.min_order_amount) && (
           <div className="mt-3 flex flex-wrap gap-2">
             {workspace.avg_preparation_time && (
-              <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-gray-100 rounded-full px-3 py-1.5 font-medium">
+              <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-full px-3 py-1.5 font-medium">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
@@ -89,7 +89,7 @@ export function EstablishmentHeader({ workspace }: Props) {
               </span>
             )}
             {workspace.delivery_enabled && workspace.delivery_fee != null && (
-              <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-gray-100 rounded-full px-3 py-1.5 font-medium">
+              <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-full px-3 py-1.5 font-medium">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="1" y="3" width="15" height="13" rx="2" />
                   <path d="M16 8h4l3 5v4h-7V8z" />
@@ -100,7 +100,7 @@ export function EstablishmentHeader({ workspace }: Props) {
               </span>
             )}
             {workspace.min_order_amount != null && Number(workspace.min_order_amount) > 0 && (
-              <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-gray-100 rounded-full px-3 py-1.5 font-medium">
+              <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-full px-3 py-1.5 font-medium">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="9" cy="21" r="1" />
                   <circle cx="20" cy="21" r="1" />
