@@ -9,7 +9,7 @@ interface CartStore {
   cart: Cart | null;
   loading: boolean;
   fetchCart: (slug: string) => Promise<void>;
-  addItem: (slug: string, product_id: number, quantity: number, notes?: string, addons?: Array<{ addon_id: number; quantity: number }>) => Promise<void>;
+  addItem: (slug: string, product_id: number, quantity: number, notes?: string, addons?: Array<{ addon_id: number; quantity: number }>, flavors?: Array<{ flavor_id: string }>) => Promise<void>;
   updateItem: (slug: string, item_id: number, quantity: number) => Promise<void>;
   removeItem: (slug: string, item_id: number) => Promise<void>;
   clearCart: (slug: string) => Promise<void>;
@@ -35,9 +35,9 @@ export const useCart = create<CartStore>((set, get) => ({
     }
   },
 
-  addItem: async (slug, product_id, quantity, notes, addons) => {
+  addItem: async (slug, product_id, quantity, notes, addons, flavors) => {
     const token = getCartToken(slug);
-    await slugApi(slug).addCartItem(token, { product_id, quantity, notes, addons });
+    await slugApi(slug).addCartItem(token, { product_id, quantity, notes, addons, flavors });
     await get().fetchCart(slug);
   },
 

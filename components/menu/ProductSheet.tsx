@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { Product, AddonGroup, Addon } from '@/types/product';
+import { Product, AddonGroup, Addon, Flavor } from '@/types/product';
 import { useCart } from '@/hooks/useCart';
 import { formatCurrency } from '@/lib/format';
 import { QuantitySelector } from '@/components/ui/QuantitySelector';
@@ -25,6 +25,7 @@ export function ProductSheet({ product, slug, hasActiveOrder, onClose, onAdded, 
   const [adding, setAdding] = useState(false);
   const [fullProduct, setFullProduct] = useState<Product | null>(null);
   const [selectedAddons, setSelectedAddons] = useState<Record<number, number>>({});
+  const [selectedFlavors, setSelectedFlavors] = useState<Flavor[]>([]);
   const [addingRecId, setAddingRecId] = useState<number | null>(null);
   const { addItem, cart } = useCart();
   const cartCount = cart?.items.reduce((a, i) => a + i.quantity, 0) ?? 0;
@@ -37,6 +38,7 @@ export function ProductSheet({ product, slug, hasActiveOrder, onClose, onAdded, 
       setAdding(false);
       setFullProduct(null);
       setSelectedAddons({});
+      setSelectedFlavors([]);
       slugApi(slug).getProduct(product.uuid).then(setFullProduct).catch(() => {});
     }
   }, [product?.uuid, slug]);
@@ -53,6 +55,37 @@ export function ProductSheet({ product, slug, hasActiveOrder, onClose, onAdded, 
       window.removeEventListener('keydown', handleKey);
     };
   }, [product, onClose]);
+
+  const maxFlavors = fullProduct?.max_flavors ?? 0;
+  const availableFlavors = (fullProduct?.flavors ?? []).filter((f) => f.is_available);
+  const hasFlavors = maxFlavors > 0 && availableFlavors.length > 0;
+  const flavorsExact = fullProduct?.flavors_exact ?? false;
+  const allowRepeat = fullProduct?.allow_flavor_repeat ?? true;
+
+  const toggleFlavor = (flavor: Flavor) => {
+    setSelectedFlavors((prev) => {
+      if (allowRepeat) {
+        if (prev.length >= maxFlavors) return prev;
+        if (flavor.max_qty > 0) {
+          const count = prev.filter((f) => f.uuid === flavor.uuid).length;
+          if (count >= flavor.max_qty) return prev;
+        }
+        return [...prev, flavor];
+      }
+      const isSelected = prev.some((f) => f.uuid === flavor.uuid);
+      if (isSelected) return prev.filter((f) => f.uuid !== flavor.uuid);
+      if (prev.length >= maxFlavors) return [...prev.slice(0, maxFlavors - 1), flavor];
+      return [...prev, flavor];
+    });
+  };
+
+  const removeFlavor = (flavor: Flavor) => {
+    setSelectedFlavors((prev) => {
+      const idx = prev.findIndex((f) => f.uuid === flavor.uuid);
+      if (idx === -1) return prev;
+      return [...prev.slice(0, idx), ...prev.slice(idx + 1)];
+    });
+  };
 
   const toggleAddon = (group: AddonGroup, addon: Addon) => {
     setSelectedAddons((prev) => {
@@ -80,7 +113,20 @@ export function ProductSheet({ product, slug, hasActiveOrder, onClose, onAdded, 
     0
   );
 
-  const itemTotal = (product ? product.price + addonTotal : 0) * quantity;
+  const flavorUnitPrice =
+    selectedFlavors.length > 0
+      ? selectedFlavors.reduce((sum, f) => sum + f.price, 0)
+      : null;
+  const basePrice = flavorUnitPrice ?? (product?.price ?? 0);
+  const itemTotal = (basePrice + addonTotal) * quantity;
+
+  const canAdd =
+    !!product &&
+    product.is_available &&
+    (!hasFlavors ||
+      (flavorsExact
+        ? selectedFlavors.length === maxFlavors
+        : selectedFlavors.length >= 1 && selectedFlavors.length <= maxFlavors));
 
   const handleAdd = async () => {
     if (!product) return;
@@ -89,7 +135,11 @@ export function ProductSheet({ product, slug, hasActiveOrder, onClose, onAdded, 
       const addons = Object.entries(selectedAddons)
         .filter(([, qty]) => qty > 0)
         .map(([addon_id, qty]) => ({ addon_id: Number(addon_id), quantity: qty }));
-      await addItem(slug, product.id, quantity, notes || undefined, addons.length > 0 ? addons : undefined);
+      const flavors =
+        selectedFlavors.length > 0
+          ? selectedFlavors.map((f) => ({ flavor_id: f.uuid }))
+          : undefined;
+      await addItem(slug, product.id, quantity, notes || undefined, addons.length > 0 ? addons : undefined, flavors);
       onAdded();
     } catch (e) {
       console.error(e);
@@ -178,8 +228,155 @@ export function ProductSheet({ product, slug, hasActiveOrder, onClose, onAdded, 
               <p className="text-gray-500 mt-2 text-sm leading-relaxed">{product.description}</p>
             )}
             <p className="text-[var(--color-primary)] font-bold text-2xl mt-3">
-              {formatCurrency(product.price)}
+              {formatCurrency(flavorUnitPrice ?? product.price)}
             </p>
+
+            {/* Opções de Montagem — skeleton while loading */}
+            {!fullProduct && product.max_flavors > 0 && (
+              <div className="mt-4 h-16 bg-gray-100 animate-pulse rounded-2xl" />
+            )}
+
+            {/* Opções de Montagem */}
+            {hasFlavors && (
+              <div className="mt-5">
+                <div className="flex items-center justify-between mb-2">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">Monte seu pedido</p>
+                    <p className="text-xs text-gray-400 mt-0.5">
+                      {flavorsExact
+                        ? `Escolha exatamente ${maxFlavors} opç${maxFlavors !== 1 ? 'ões' : 'ão'}`
+                        : maxFlavors === 1 ? 'Escolha 1 opção' : `Escolha até ${maxFlavors} opções`}
+                      {' · '}
+                      <span className={selectedFlavors.length === 0 ? 'text-red-400' : 'text-green-600'}>
+                        {selectedFlavors.length} selecionado{selectedFlavors.length !== 1 ? 's' : ''}
+                      </span>
+                    </p>
+                  </div>
+                  {selectedFlavors.length > 0 && (
+                    <button onClick={() => setSelectedFlavors([])} className="text-xs text-gray-400 underline">
+                      Limpar
+                    </button>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  {availableFlavors.map((flavor) => {
+                    const count = selectedFlavors.filter((f) => f.uuid === flavor.uuid).length;
+                    const isSelected = count > 0;
+                    const atMax = selectedFlavors.length >= maxFlavors || (flavor.max_qty > 0 && count >= flavor.max_qty);
+
+                    if (allowRepeat) {
+                      // iFood-style: explicit + / − counter
+                      return (
+                        <div
+                          key={flavor.uuid}
+                          className={`flex items-center justify-between px-4 py-3 rounded-2xl border transition-all ${
+                            isSelected ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/8' : 'border-gray-200 bg-white'
+                          }`}
+                        >
+                          <div className="flex-1 mr-3">
+                            <p className="text-sm font-medium text-gray-800">{flavor.name}</p>
+                            {flavor.ingredients.length > 0 && (
+                              <p className="text-xs text-gray-400 mt-0.5">
+                                {flavor.ingredients.map((i) => i.name).join(', ')}
+                              </p>
+                            )}
+                            {flavor.price > 0 && (
+                              <p className="text-sm font-semibold text-[var(--color-primary)] mt-0.5">
+                                {formatCurrency(flavor.price)}
+                              </p>
+                            )}
+                          </div>
+                          {count === 0 ? (
+                            <button
+                              onClick={() => toggleFlavor(flavor)}
+                              disabled={atMax}
+                              className="w-8 h-8 rounded-full border-2 border-[var(--color-primary)] text-[var(--color-primary)] flex items-center justify-center active:scale-95 transition-transform disabled:opacity-30 disabled:cursor-not-allowed flex-shrink-0"
+                            >
+                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                              </svg>
+                            </button>
+                          ) : (
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <button
+                                onClick={() => removeFlavor(flavor)}
+                                className="w-8 h-8 rounded-full border-2 border-[var(--color-primary)] text-[var(--color-primary)] flex items-center justify-center active:scale-95 transition-transform"
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                  <line x1="5" y1="12" x2="19" y2="12" />
+                                </svg>
+                              </button>
+                              <span className="text-sm font-bold text-[var(--color-primary)] w-4 text-center">{count}</span>
+                              <button
+                                onClick={() => toggleFlavor(flavor)}
+                                disabled={atMax}
+                                className="w-8 h-8 rounded-full border-2 border-[var(--color-primary)] text-[var(--color-primary)] flex items-center justify-center active:scale-95 transition-transform disabled:opacity-30 disabled:cursor-not-allowed"
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                                </svg>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // Checkbox-style (allowRepeat = false)
+                    return (
+                      <button
+                        key={flavor.uuid}
+                        onClick={() => toggleFlavor(flavor)}
+                        className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl border transition-all active:scale-[0.99] text-left ${
+                          isSelected ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/8' : 'border-gray-200 bg-white'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                            isSelected ? 'border-[var(--color-primary)] bg-[var(--color-primary)]' : 'border-gray-300'
+                          }`}>
+                            {isSelected && (
+                              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-gray-800">{flavor.name}</p>
+                            {flavor.ingredients.length > 0 && (
+                              <p className="text-xs text-gray-400 mt-0.5">
+                                {flavor.ingredients.map((i) => i.name).join(', ')}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        {flavor.price > 0 && (
+                          <span className="text-sm font-semibold text-[var(--color-primary)] ml-2 flex-shrink-0">
+                            {formatCurrency(flavor.price)}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {selectedFlavors.length > 1 && (
+                  <div className="mt-3 p-3 bg-gray-50 rounded-2xl text-xs text-gray-500">
+                    {selectedFlavors.map((f, i) => (
+                      <div key={`${f.uuid}-${i}`} className="flex justify-between">
+                        <span>{f.name}</span>
+                        <span>{formatCurrency(f.price)}</span>
+                      </div>
+                    ))}
+                    <div className="flex justify-between font-semibold text-gray-700 mt-1 pt-1 border-t border-gray-200">
+                      <span>Total por unidade</span>
+                      <span>{formatCurrency(flavorUnitPrice!)}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Addon groups */}
             {addonGroups.length > 0 && (
@@ -298,10 +495,16 @@ export function ProductSheet({ product, slug, hasActiveOrder, onClose, onAdded, 
             <Button
               onClick={handleAdd}
               loading={adding}
-              disabled={!product.is_available}
+              disabled={!canAdd}
               className="w-full py-4 text-base rounded-2xl font-semibold"
             >
-              {product.is_available ? `Adicionar · ${formatCurrency(itemTotal)}` : 'Indisponível'}
+              {!product.is_available
+                ? 'Indisponível'
+                : hasFlavors && selectedFlavors.length === 0
+                ? 'Monte seu pedido'
+                : hasFlavors && flavorsExact && selectedFlavors.length < maxFlavors
+                ? `Faltam ${maxFlavors - selectedFlavors.length} opção(ões)`
+                : `Adicionar · ${formatCurrency(itemTotal)}`}
             </Button>
           )}
         </div>

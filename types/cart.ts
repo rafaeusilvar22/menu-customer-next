@@ -7,6 +7,15 @@ export interface CartItemAddon {
   subtotal: number;
 }
 
+export interface CartItemFlavor {
+  id: number;
+  flavor_id: number;
+  name: string;
+  price: number;
+  proportion: number;
+  subtotal: number;
+}
+
 export interface CartItem {
   id: number;
   uuid: string;
@@ -18,6 +27,7 @@ export interface CartItem {
   quantity: number;
   notes: string;
   addons: CartItemAddon[];
+  flavors: CartItemFlavor[];
   subtotal: number;
 }
 
