@@ -233,6 +233,10 @@ export default function CartPage({ params }: Props) {
                 products={recommendations.data!}
                 title="Adicionar ao pedido?"
                 onAdd={async (product: Product, quantity: number) => {
+                  if (product.max_flavors > 0) {
+                    router.push(`/${slug}/product/${product.uuid}`);
+                    return;
+                  }
                   setAddingRec(product.id);
                   try {
                     const token = getCartToken(slug);

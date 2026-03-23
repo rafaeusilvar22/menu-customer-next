@@ -149,6 +149,10 @@ export function ProductSheet({ product, slug, hasActiveOrder, onClose, onAdded, 
   };
 
   const handleAddRecommended = async (rec: Product, qty: number) => {
+    if (rec.max_flavors > 0) {
+      onSelectProduct?.(rec);
+      return;
+    }
     setAddingRecId(rec.id);
     try {
       await addItem(slug, rec.id, qty);
