@@ -45,8 +45,8 @@ export interface OrderMessage {
 }
 
 export interface CheckoutPayload {
-  customer_name?: string;
-  customer_phone?: string;
+  customer_name: string;
+  customer_phone: string;
   customer_email?: string;
   payment_method?: PaymentMethod;
   delivery_type?: DeliveryType;

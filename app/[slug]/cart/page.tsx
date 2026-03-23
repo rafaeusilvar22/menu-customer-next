@@ -29,6 +29,8 @@ export default function CartPage({ params }: Props) {
   const { establishment } = useEstablishment(slug);
 
   const [form, setForm] = useState<CheckoutPayload>({
+    customer_name: '',
+    customer_phone: '',
     delivery_type: 'pickup',
     payment_method: 'pix',
   });
@@ -36,6 +38,8 @@ export default function CartPage({ params }: Props) {
   const [error, setError] = useState('');
   const [blockedByOrder, setBlockedByOrder] = useState<string | null>(null);
   const [addingRec, setAddingRec] = useState<number | null>(null);
+
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; phone?: string }>({});
 
   const [couponInput, setCouponInput] = useState('');
   const [coupon, setCoupon] = useState<CouponValidationResult | null>(null);
@@ -116,6 +120,15 @@ export default function CartPage({ params }: Props) {
   const handleCheckout = async () => {
     if (!cart || cart.items.length === 0) return;
     if (deliveryRadiusError) { setError(deliveryRadiusError); return; }
+
+    const nameVal = form.customer_name?.trim() ?? '';
+    const phoneDigits = (form.customer_phone ?? '').replace(/\D/g, '');
+    const errors: { name?: string; phone?: string } = {};
+    if (!nameVal) errors.name = 'Informe seu nome.';
+    if (phoneDigits.length < 10) errors.phone = 'Informe um telefone válido.';
+    if (Object.keys(errors).length > 0) { setFieldErrors(errors); return; }
+    setFieldErrors({});
+
     setError('');
     setSubmitting(true);
     try {
@@ -274,26 +287,26 @@ export default function CartPage({ params }: Props) {
             </h2>
 
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-1.5 uppercase tracking-wide">Nome (opcional)</label>
+              <label className="text-xs font-semibold text-gray-500 block mb-1.5 uppercase tracking-wide">Nome</label>
               <input
                 value={form.customer_name ?? ''}
-                onChange={(e) => setForm((f) => ({ ...f, customer_name: e.target.value }))}
+                onChange={(e) => { setForm((f) => ({ ...f, customer_name: e.target.value })); setFieldErrors((fe) => ({ ...fe, name: undefined })); }}
                 placeholder="Seu nome"
-                className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary)]/10 transition-all duration-150 bg-gray-50/50 placeholder:text-gray-300"
+                className={`w-full border rounded-2xl px-4 py-3 text-sm focus:outline-none transition-all duration-150 bg-gray-50/50 placeholder:text-gray-300 ${fieldErrors.name ? 'border-red-300 focus:border-red-400 focus:ring-3 focus:ring-red-100' : 'border-gray-200 focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary)]/10'}`}
               />
+              {fieldErrors.name && <p className="text-xs text-red-500 mt-1">{fieldErrors.name}</p>}
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-gray-500 block mb-1.5 uppercase tracking-wide">Telefone (opcional)</label>
+              <label className="text-xs font-semibold text-gray-500 block mb-1.5 uppercase tracking-wide">Telefone</label>
               <input
                 value={form.customer_phone ?? ''}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, customer_phone: formatPhone(e.target.value) }))
-                }
+                onChange={(e) => { setForm((f) => ({ ...f, customer_phone: formatPhone(e.target.value) })); setFieldErrors((fe) => ({ ...fe, phone: undefined })); }}
                 placeholder="(00) 00000-0000"
                 inputMode="tel"
-                className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary)]/10 transition-all duration-150 bg-gray-50/50 placeholder:text-gray-300"
+                className={`w-full border rounded-2xl px-4 py-3 text-sm focus:outline-none transition-all duration-150 bg-gray-50/50 placeholder:text-gray-300 ${fieldErrors.phone ? 'border-red-300 focus:border-red-400 focus:ring-3 focus:ring-red-100' : 'border-gray-200 focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary)]/10'}`}
               />
+              {fieldErrors.phone && <p className="text-xs text-red-500 mt-1">{fieldErrors.phone}</p>}
             </div>
 
             <div>
