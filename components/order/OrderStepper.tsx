@@ -24,24 +24,34 @@ function XIcon() {
 }
 
 const STEP_SUBTITLES: Record<OrderStatus, string> = {
-  pending: 'Aguardando confirmação',
-  confirmed: 'Pedido aceito',
-  preparing: 'Na cozinha agora',
-  ready: 'Pronto para retirada',
-  delivering: 'A caminho!',
-  delivered: 'Aproveite sua refeição!',
+  pending: 'Aguardando confirmação do estabelecimento',
+  confirmed: 'Pedido aceito e será preparado em breve',
+  preparing: 'Seu pedido está sendo preparado na cozinha',
+  ready: 'Pronto! Pode retirar ou aguardar o entregador',
+  delivering: 'O entregador está a caminho!',
+  delivered: 'Aproveite! Bom apetite 🍽️',
   cancelled: '',
+};
+
+const STEP_ICONS: Record<OrderStatus, string> = {
+  pending: '🕐',
+  confirmed: '✅',
+  preparing: '👨‍🍳',
+  ready: '🛍️',
+  delivering: '🛵',
+  delivered: '🎉',
+  cancelled: '❌',
 };
 
 export function OrderStepper({ status }: Props) {
   if (status === 'cancelled') {
     return (
-      <div className="bg-red-50 border border-red-100 rounded-2xl p-6 text-center">
-        <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3 text-red-500">
+      <div className="bg-red-50 border border-red-100 rounded-2xl p-6 text-center animate-fade-in-up">
+        <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-3 text-red-500">
           <XIcon />
         </div>
-        <p className="text-red-600 font-semibold">Pedido cancelado</p>
-        <p className="text-red-400 text-sm mt-1">Entre em contato com o estabelecimento.</p>
+        <p className="text-red-600 font-bold text-base">Pedido cancelado</p>
+        <p className="text-red-400 text-sm mt-1">Entre em contato com o estabelecimento para mais informações.</p>
       </div>
     );
   }
@@ -49,8 +59,8 @@ export function OrderStepper({ status }: Props) {
   const currentIndex = STEPS.indexOf(status);
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5">
-      <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-5">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 animate-fade-in-up">
+      <p className="text-[11px] font-bold uppercase tracking-widest text-gray-400 mb-5">
         Status do pedido
       </p>
 
@@ -61,22 +71,25 @@ export function OrderStepper({ status }: Props) {
           const isLast = i === STEPS.length - 1;
 
           return (
-            <div key={step} className="flex gap-3.5">
+            <div key={step} className="flex gap-4">
               {/* Timeline column */}
               <div className="flex flex-col items-center">
                 <div
-                  className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-all duration-500 ${
-                    done
-                      ? 'bg-[var(--color-primary)] text-white'
+                  className={`
+                    w-7 h-7 rounded-full flex items-center justify-center shrink-0
+                    transition-all duration-500
+                    ${done
+                      ? 'bg-[var(--color-primary)] text-white shadow-sm shadow-[var(--color-primary)]/30'
                       : active
-                      ? 'bg-[var(--color-primary)] text-white shadow-[0_0_0_4px_color-mix(in_srgb,var(--color-primary)_20%,transparent)]'
-                      : 'bg-gray-100'
-                  }`}
+                      ? 'bg-[var(--color-primary)] text-white shadow-md shadow-[var(--color-primary)]/40 ring-4 ring-[var(--color-primary)]/15'
+                      : 'bg-gray-100 text-gray-300'
+                    }
+                  `}
                 >
                   {done ? (
                     <CheckIcon />
                   ) : active ? (
-                    <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                    <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse" />
                   ) : (
                     <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
                   )}
@@ -84,7 +97,7 @@ export function OrderStepper({ status }: Props) {
 
                 {!isLast && (
                   <div
-                    className={`w-px flex-1 my-1 min-h-[18px] rounded-full transition-all duration-500 ${
+                    className={`w-0.5 flex-1 my-1.5 min-h-[20px] rounded-full transition-all duration-700 ${
                       done ? 'bg-[var(--color-primary)]' : 'bg-gray-100'
                     }`}
                   />
@@ -92,20 +105,23 @@ export function OrderStepper({ status }: Props) {
               </div>
 
               {/* Content column */}
-              <div className={`pb-4 ${isLast ? 'pb-0' : ''} pt-0.5`}>
-                <p
-                  className={`text-sm font-semibold leading-tight transition-colors duration-300 ${
-                    active
-                      ? 'text-gray-900'
-                      : done
-                      ? 'text-gray-400'
+              <div className={`pb-5 ${isLast ? 'pb-0' : ''} pt-0.5 flex-1`}>
+                <div className="flex items-center gap-2">
+                  {active && (
+                    <span className="text-base">{STEP_ICONS[step]}</span>
+                  )}
+                  <p
+                    className={`text-sm font-semibold leading-tight transition-colors duration-300 ${
+                      active ? 'text-gray-900 text-base'
+                      : done ? 'text-gray-400'
                       : 'text-gray-300'
-                  }`}
-                >
-                  {ORDER_STATUS_LABELS[step]}
-                </p>
+                    }`}
+                  >
+                    {ORDER_STATUS_LABELS[step]}
+                  </p>
+                </div>
                 {active && (
-                  <p className="text-xs text-[var(--color-primary)] mt-0.5 font-medium">
+                  <p className="text-xs text-[var(--color-primary)] mt-1 font-medium leading-snug">
                     {STEP_SUBTITLES[step]}
                   </p>
                 )}

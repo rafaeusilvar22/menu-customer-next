@@ -7,10 +7,19 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses = {
-  primary: 'bg-[var(--color-primary)] text-white hover:opacity-90 active:opacity-80',
-  secondary: 'bg-[var(--color-secondary)] text-white hover:opacity-90',
-  ghost: 'bg-transparent border border-gray-300 text-gray-700 hover:bg-gray-50',
-  danger: 'bg-red-500 text-white hover:bg-red-600',
+  primary:
+    'bg-[var(--color-primary)] text-white shadow-sm shadow-[var(--color-primary)]/30 ' +
+    'hover:bg-[var(--color-emphasis)] hover:shadow-md hover:shadow-[var(--color-primary)]/25 ' +
+    'active:scale-[0.97] active:shadow-sm',
+  secondary:
+    'bg-[var(--color-secondary)] text-white shadow-sm ' +
+    'hover:opacity-90 active:scale-[0.97]',
+  ghost:
+    'bg-transparent border border-gray-200 text-gray-700 ' +
+    'hover:bg-gray-50 hover:border-gray-300 active:scale-[0.97]',
+  danger:
+    'bg-red-500 text-white shadow-sm ' +
+    'hover:bg-red-600 active:scale-[0.97]',
 };
 
 const sizeClasses = {
@@ -31,7 +40,13 @@ export function Button({
   return (
     <button
       disabled={disabled || loading}
-      className={`rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed ${variantClasses[variant]} ${sizeClasses[size]} ${className}`}
+      className={`
+        rounded-xl font-medium
+        transition-all duration-150
+        disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100
+        focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] focus-visible:outline-offset-2
+        ${variantClasses[variant]} ${sizeClasses[size]} ${className}
+      `}
       {...props}
     >
       {loading ? (

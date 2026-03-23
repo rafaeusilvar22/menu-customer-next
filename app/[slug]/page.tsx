@@ -121,12 +121,20 @@ export default function MenuPage({ params }: Props) {
                       <Skeleton className="w-20 h-20 rounded-xl flex-shrink-0" />
                     </div>
                   ))
-                : displayedCategories.map((category: ProductCategory) => (
+                : displayedCategories.map((category: ProductCategory, idx: number) => (
                     <section
                       key={category.uuid}
-                      className="pt-4"
+                      className="pt-5 animate-fade-in-up"
+                      style={{ animationDelay: `${idx * 40}ms` }}
                     >
-                      <h2 className="font-bold text-gray-800 text-base mb-1">{category.name}</h2>
+                      <div className="flex items-center gap-2 mb-3">
+                        <h2 className="font-bold text-gray-800 text-base">{category.name}</h2>
+                        {category.products && (
+                          <span className="text-xs text-gray-400 font-medium bg-gray-100 px-2 py-0.5 rounded-full">
+                            {category.products.length}
+                          </span>
+                        )}
+                      </div>
                       {category.products && category.products.length > 0 ? (
                         <div className="md:grid md:grid-cols-2 md:gap-x-4 lg:block">
                           {category.products.map((product) => (
@@ -168,13 +176,20 @@ export default function MenuPage({ params }: Props) {
         <div className="lg:hidden fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md px-4 pb-safe z-50 animate-cart-spring">
           <button
             onClick={() => router.push(`/${slug}/cart`)}
-            className="w-full bg-[var(--color-primary)] text-white rounded-2xl px-5 py-4 flex items-center justify-between shadow-xl active:scale-[0.98] transition-transform"
+            className="
+              w-full bg-[var(--color-primary)] text-white rounded-2xl px-5 py-4
+              flex items-center justify-between
+              shadow-xl shadow-[var(--color-primary)]/40
+              hover:bg-[var(--color-emphasis)] hover:shadow-2xl hover:shadow-[var(--color-primary)]/50
+              active:scale-[0.98]
+              transition-all duration-200
+            "
           >
-            <span className="bg-white/25 rounded-lg w-8 h-8 flex items-center justify-center text-sm font-bold">
+            <span className="bg-white/25 rounded-lg w-8 h-8 flex items-center justify-center text-sm font-bold tabular-nums">
               {itemCount}
             </span>
             <span className="font-bold text-base">Ver carrinho</span>
-            <span className="font-bold text-base">{formatCurrency(total)}</span>
+            <span className="font-bold text-base tabular-nums">{formatCurrency(total)}</span>
           </button>
         </div>
       )}

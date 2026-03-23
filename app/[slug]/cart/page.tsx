@@ -180,22 +180,26 @@ export default function CartPage({ params }: Props) {
   if (blockedByOrder) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
+        <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
           <div className="max-w-2xl mx-auto flex items-center gap-3 px-4 py-3">
             <BackButton onClick={() => router.back()} />
             <h1 className="font-semibold text-gray-800">Meu Carrinho</h1>
           </div>
         </div>
-        <div className="max-w-2xl mx-auto flex flex-col items-center justify-center gap-4 p-10 text-center">
-          <span className="text-5xl">⏳</span>
-          <p className="font-semibold text-gray-800">Você já tem um pedido em andamento</p>
-          <p className="text-sm text-gray-500">Aguarde a conclusão do pedido atual antes de fazer um novo.</p>
-          <Button onClick={() => router.push(`/${slug}/order/${blockedByOrder}`)}>
-            Acompanhar pedido
-          </Button>
-          <Button variant="ghost" onClick={() => router.push(`/${slug}`)}>
-            Ver cardápio
-          </Button>
+        <div className="max-w-2xl mx-auto flex flex-col items-center justify-center gap-4 p-10 text-center animate-fade-in-up">
+          <div className="w-20 h-20 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center text-4xl">
+            ⏳
+          </div>
+          <p className="font-bold text-gray-800 text-lg">Pedido em andamento</p>
+          <p className="text-sm text-gray-500 max-w-xs">Aguarde a conclusão do pedido atual antes de fazer um novo.</p>
+          <div className="flex flex-col gap-2 w-full max-w-xs">
+            <Button onClick={() => router.push(`/${slug}/order/${blockedByOrder}`)}>
+              Acompanhar pedido
+            </Button>
+            <Button variant="ghost" onClick={() => router.push(`/${slug}`)}>
+              Ver cardápio
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -203,7 +207,7 @@ export default function CartPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50 pb-36">
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-100">
+      <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-gray-100 shadow-sm">
         <div className="max-w-2xl mx-auto flex items-center gap-3 px-4 py-3">
           <BackButton onClick={() => router.back()} />
           <h1 className="font-semibold text-gray-800">Meu Carrinho</h1>
@@ -211,18 +215,28 @@ export default function CartPage({ params }: Props) {
       </div>
 
       {!cart || cart.items.length === 0 ? (
-        <div className="max-w-2xl mx-auto flex flex-col items-center justify-center gap-4 p-10 text-center">
-          <span className="text-6xl">🛒</span>
-          <p className="text-gray-500">Seu carrinho está vazio.</p>
+        <div className="max-w-2xl mx-auto flex flex-col items-center justify-center gap-4 p-10 text-center animate-fade-in-up">
+          <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center text-4xl">
+            🛒
+          </div>
+          <p className="font-semibold text-gray-700">Seu carrinho está vazio</p>
+          <p className="text-sm text-gray-400">Adicione itens do cardápio para começar.</p>
           <Button variant="ghost" onClick={() => router.push(`/${slug}`)}>Ver cardápio</Button>
         </div>
       ) : (
-        <div className="max-w-2xl mx-auto p-4 space-y-3">
+        <div className="max-w-2xl mx-auto p-4 space-y-3 animate-fade-in-up">
           {cart.items.map((item) => (
             <CartItemRow key={item.id} item={item} slug={slug} />
           ))}
 
-          <button onClick={handleClear} className="text-xs text-red-400 w-full text-right mt-1">
+          <button
+            onClick={handleClear}
+            className="text-xs text-gray-400 hover:text-red-500 w-full text-right mt-1 transition-colors duration-150 flex items-center justify-end gap-1"
+          >
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+            </svg>
             Limpar carrinho
           </button>
 
@@ -253,23 +267,24 @@ export default function CartPage({ params }: Props) {
           )}
 
           {/* Checkout form */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 mt-4 space-y-5">
-            <h2 className="font-semibold text-gray-700 text-sm">
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mt-4 space-y-5">
+            <h2 className="font-bold text-gray-800 text-sm flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary)] flex items-center justify-center text-xs font-bold">1</span>
               Dados do pedido
             </h2>
 
             <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1.5">Nome (opcional)</label>
+              <label className="text-xs font-semibold text-gray-500 block mb-1.5 uppercase tracking-wide">Nome (opcional)</label>
               <input
                 value={form.customer_name ?? ''}
                 onChange={(e) => setForm((f) => ({ ...f, customer_name: e.target.value }))}
                 placeholder="Seu nome"
-                className="w-full border border-gray-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-[var(--color-primary)] transition-colors bg-gray-50/50 placeholder:text-gray-300"
+                className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary)]/10 transition-all duration-150 bg-gray-50/50 placeholder:text-gray-300"
               />
             </div>
 
             <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1.5">Telefone (opcional)</label>
+              <label className="text-xs font-semibold text-gray-500 block mb-1.5 uppercase tracking-wide">Telefone (opcional)</label>
               <input
                 value={form.customer_phone ?? ''}
                 onChange={(e) =>
@@ -277,12 +292,12 @@ export default function CartPage({ params }: Props) {
                 }
                 placeholder="(00) 00000-0000"
                 inputMode="tel"
-                className="w-full border border-gray-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-[var(--color-primary)] transition-colors bg-gray-50/50 placeholder:text-gray-300"
+                className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary)]/10 transition-all duration-150 bg-gray-50/50 placeholder:text-gray-300"
               />
             </div>
 
             <div>
-              <label className="text-xs font-medium text-gray-500 block mb-2">Tipo de entrega</label>
+              <label className="text-xs font-semibold text-gray-500 block mb-2 uppercase tracking-wide">Tipo de entrega</label>
               <div className="flex gap-2">
                 {(['table', 'pickup', 'delivery'] as DeliveryType[]).filter(
                   (t) => t !== 'delivery' || workspace?.delivery_enabled
@@ -290,10 +305,10 @@ export default function CartPage({ params }: Props) {
                   <button
                     key={type}
                     onClick={() => setForm((f) => ({ ...f, delivery_type: type }))}
-                    className={`flex-1 flex flex-col items-center gap-1.5 py-3 rounded-2xl text-xs font-medium border transition-all ${
+                    className={`flex-1 flex flex-col items-center gap-1.5 py-3.5 rounded-2xl text-xs font-semibold border transition-all duration-200 active:scale-[0.97] ${
                       form.delivery_type === type
-                        ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/8 text-[var(--color-primary)]'
-                        : 'border-gray-200 text-gray-400 bg-white'
+                        ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/8 text-[var(--color-primary)] shadow-sm shadow-[var(--color-primary)]/15'
+                        : 'border-gray-200 text-gray-400 bg-white hover:border-gray-300 hover:text-gray-600 hover:bg-gray-50'
                     }`}
                   >
                     {type === 'table' && (
@@ -325,27 +340,27 @@ export default function CartPage({ params }: Props) {
 
             {form.delivery_type === 'table' && (
               <div>
-                <label className="text-xs font-medium text-gray-500 block mb-1.5">Número da mesa</label>
+                <label className="text-xs font-semibold text-gray-500 block mb-1.5 uppercase tracking-wide">Número da mesa</label>
                 <input
                   value={form.table_number ?? ''}
                   onChange={(e) => setForm((f) => ({ ...f, table_number: e.target.value }))}
                   placeholder="Ex: 05"
                   inputMode="numeric"
                   pattern="[0-9]*"
-                  className="w-full border border-gray-200 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:border-[var(--color-primary)] transition-colors bg-gray-50/50 placeholder:text-gray-300"
+                  className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary)]/10 transition-all duration-150 bg-gray-50/50 placeholder:text-gray-300"
                 />
               </div>
             )}
 
             {form.delivery_type === 'delivery' && (
               <div>
-                <label className="text-xs font-medium text-gray-600 block mb-1.5">Endereço de entrega</label>
+                <label className="text-xs font-semibold text-gray-500 block mb-1.5 uppercase tracking-wide">Endereço de entrega</label>
 
                 <button
                   type="button"
                   onClick={handleGetLocation}
                   disabled={geoStatus === 'loading'}
-                  className="w-full mb-2 flex items-center justify-center gap-2 border border-dashed border-[var(--color-primary)]/60 text-[var(--color-primary)] rounded-2xl py-2.5 text-sm font-medium disabled:opacity-50 transition-opacity bg-[var(--color-primary)]/4"
+                  className="w-full mb-2 flex items-center justify-center gap-2 border border-dashed border-[var(--color-primary)]/60 text-[var(--color-primary)] rounded-2xl py-3 text-sm font-semibold disabled:opacity-50 hover:bg-[var(--color-primary)]/8 active:scale-[0.98] transition-all duration-150 bg-[var(--color-primary)]/4"
                 >
                   {geoStatus === 'loading' ? (
                     <>
@@ -381,10 +396,10 @@ export default function CartPage({ params }: Props) {
                   value={form.delivery_address ?? ''}
                   onChange={(e) => setForm((f) => ({ ...f, delivery_address: e.target.value }))}
                   placeholder="Rua, número, bairro"
-                  className={`w-full border rounded-2xl px-4 py-2.5 text-sm focus:outline-none transition-colors bg-gray-50/50 placeholder:text-gray-300 ${
+                  className={`w-full border rounded-2xl px-4 py-3 text-sm focus:outline-none transition-all duration-150 bg-gray-50/50 placeholder:text-gray-300 ${
                     deliveryRadiusError
-                      ? 'border-red-300 focus:border-red-400'
-                      : 'border-gray-200 focus:border-[var(--color-primary)]'
+                      ? 'border-red-300 focus:border-red-400 focus:ring-3 focus:ring-red-100'
+                      : 'border-gray-200 focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary)]/10'
                   }`}
                 />
                 {deliveryRadiusError && (
@@ -400,16 +415,16 @@ export default function CartPage({ params }: Props) {
 
             {acceptedMethods.length > 0 && (
               <div>
-                <label className="text-xs font-medium text-gray-500 block mb-2">Forma de pagamento</label>
+                <label className="text-xs font-semibold text-gray-500 block mb-2 uppercase tracking-wide">Forma de pagamento</label>
                 <div className="grid grid-cols-2 gap-2">
                   {acceptedMethods.map((method: string) => (
                     <button
                       key={method}
                       onClick={() => setForm((f) => ({ ...f, payment_method: method as PaymentMethod }))}
-                      className={`flex items-center gap-2.5 px-3 py-3 rounded-2xl text-xs font-medium border transition-all ${
+                      className={`flex items-center gap-2.5 px-3 py-3.5 rounded-2xl text-xs font-semibold border transition-all duration-200 active:scale-[0.97] ${
                         form.payment_method === method
-                          ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/8 text-[var(--color-primary)]'
-                          : 'border-gray-200 text-gray-500 bg-white'
+                          ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/8 text-[var(--color-primary)] shadow-sm shadow-[var(--color-primary)]/15'
+                          : 'border-gray-200 text-gray-500 bg-white hover:border-gray-300 hover:text-gray-700 hover:bg-gray-50'
                       }`}
                     >
                       {method === 'credit_card' || method === 'debit_card' ? (
@@ -436,20 +451,28 @@ export default function CartPage({ params }: Props) {
             )}
 
             <div>
-              <label className="text-xs font-medium text-gray-500 block mb-1.5">Observações (opcional)</label>
+              <label className="text-xs font-semibold text-gray-500 block mb-1.5 uppercase tracking-wide">Observações (opcional)</label>
               <textarea
                 value={form.notes ?? ''}
                 onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                 placeholder="Ex: sem pimenta, alergia a amendoim..."
                 rows={2}
-                className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-[var(--color-primary)] transition-colors bg-gray-50/50 placeholder:text-gray-300"
+                className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary)]/10 transition-all duration-150 bg-gray-50/50 placeholder:text-gray-300"
               />
             </div>
           </div>
 
           {/* Coupon */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-5">
-            <h2 className="font-semibold text-gray-700 text-sm mb-3">Cupom de desconto</h2>
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <h2 className="font-bold text-gray-800 text-sm mb-3 flex items-center gap-2">
+              <span className="w-6 h-6 rounded-full bg-green-50 text-green-600 flex items-center justify-center text-xs">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                  <line x1="7" y1="7" x2="7.01" y2="7"/>
+                </svg>
+              </span>
+              Cupom de desconto
+            </h2>
             {coupon ? (
               <div className="flex items-center justify-between bg-green-50 border border-green-200 rounded-2xl px-4 py-3">
                 <div>
@@ -478,12 +501,12 @@ export default function CartPage({ params }: Props) {
                   onChange={(e) => { setCouponInput(e.target.value.toUpperCase()); setCouponError(''); }}
                   onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
                   placeholder="Digite o código"
-                  className="flex-1 border border-gray-200 rounded-2xl px-4 py-2.5 text-sm uppercase tracking-wider focus:outline-none focus:border-[var(--color-primary)] transition-colors bg-gray-50/50 placeholder:text-gray-300 placeholder:normal-case placeholder:tracking-normal"
+                  className="flex-1 border border-gray-200 rounded-2xl px-4 py-3 text-sm uppercase tracking-wider focus:outline-none focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary)]/10 transition-all duration-150 bg-gray-50/50 placeholder:text-gray-300 placeholder:normal-case placeholder:tracking-normal"
                 />
                 <button
                   onClick={handleApplyCoupon}
                   disabled={couponLoading || !couponInput.trim()}
-                  className="px-4 py-2.5 rounded-2xl text-sm font-medium bg-[var(--color-primary)] text-white disabled:opacity-50 transition-opacity"
+                  className="px-4 py-3 rounded-2xl text-sm font-semibold bg-[var(--color-primary)] text-white disabled:opacity-40 hover:bg-[var(--color-emphasis)] active:scale-[0.97] transition-all duration-150 shadow-sm"
                 >
                   {couponLoading ? '...' : 'Aplicar'}
                 </button>
@@ -495,9 +518,9 @@ export default function CartPage({ params }: Props) {
           </div>
 
           {/* Summary */}
-          <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-2">
-            <h2 className="font-semibold text-gray-700 text-sm mb-3">
-              Resumo
+          <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 space-y-2">
+            <h2 className="font-bold text-gray-800 text-sm mb-3">
+              Resumo do pedido
             </h2>
             <div className="flex justify-between text-sm text-gray-600">
               <span>Subtotal</span>
@@ -529,14 +552,16 @@ export default function CartPage({ params }: Props) {
 
       {cart && cart.items.length > 0 && (
         <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl px-4 pb-safe z-50">
-          <Button
-            onClick={handleCheckout}
-            loading={submitting}
-            disabled={!!deliveryRadiusError}
-            className="w-full py-4 text-base rounded-2xl"
-          >
-            Fazer pedido · {formatCurrency(total)}
-          </Button>
+          <div className="bg-white/80 backdrop-blur-md rounded-t-2xl pt-3 -mx-4 px-4 border-t border-gray-100 shadow-[0_-8px_24px_-4px_rgba(0,0,0,0.08)]">
+            <Button
+              onClick={handleCheckout}
+              loading={submitting}
+              disabled={!!deliveryRadiusError}
+              className="w-full py-4 text-base rounded-2xl font-bold"
+            >
+              Finalizar pedido · {formatCurrency(total)}
+            </Button>
+          </div>
         </div>
       )}
     </div>

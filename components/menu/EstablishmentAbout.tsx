@@ -69,10 +69,19 @@ export function EstablishmentAbout({ workspace, businessHours }: Props) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-white border-b border-gray-100 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors lg:px-6"
+        className="
+          w-full flex items-center justify-between px-4 py-3
+          bg-white border-b border-gray-100
+          text-sm font-medium text-gray-700
+          hover:bg-gray-50 hover:text-gray-900
+          active:bg-gray-100
+          transition-all duration-150
+          lg:px-6
+          group
+        "
       >
         <span className="flex items-center gap-2">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-primary)]">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -85,22 +94,30 @@ export function EstablishmentAbout({ workspace, businessHours }: Props) {
             <span className="text-xs text-red-400 font-normal">· fechado hoje</span>
           )}
         </span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 flex-shrink-0">
+        <svg
+          width="14" height="14" viewBox="0 0 24 24"
+          fill="none" stroke="currentColor" strokeWidth="2.5"
+          strokeLinecap="round" strokeLinejoin="round"
+          className="text-gray-400 flex-shrink-0 group-hover:translate-x-0.5 transition-transform duration-150"
+        >
           <polyline points="9 18 15 12 9 6" />
         </svg>
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4">
           <div
-            className="absolute inset-0 bg-black/40 animate-overlay-fade"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-overlay-fade"
             onClick={() => setOpen(false)}
           />
 
-          <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm animate-sheet-up overflow-hidden">
+          <div className="relative bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-sm animate-sheet-up overflow-hidden">
+            {/* Drag handle (mobile) */}
+            <div className="sm:hidden w-10 h-1 bg-gray-200 rounded-full mx-auto mt-3 mb-1" />
+
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-50">
-              <div className="flex items-center gap-2 font-semibold text-gray-800">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-2 font-semibold text-gray-800 text-sm">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[var(--color-primary)]">
                   <circle cx="12" cy="12" r="10" />
                   <line x1="12" y1="8" x2="12" y2="12" />
@@ -111,7 +128,7 @@ export function EstablishmentAbout({ workspace, businessHours }: Props) {
               <button
                 onClick={() => setOpen(false)}
                 aria-label="Fechar"
-                className="w-7 h-7 rounded-full bg-gray-100/80 flex items-center justify-center text-gray-400 hover:bg-gray-200 transition-colors"
+                className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 hover:text-gray-800 active:scale-90 transition-all duration-150"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="6" x2="6" y2="18" />
@@ -121,7 +138,7 @@ export function EstablishmentAbout({ workspace, businessHours }: Props) {
             </div>
 
             {/* Content */}
-            <div className="divide-y divide-gray-50/80 max-h-[70vh] overflow-y-auto">
+            <div className="divide-y divide-gray-50 max-h-[70vh] overflow-y-auto">
 
               {/* About */}
               {workspace.about && (
@@ -131,7 +148,7 @@ export function EstablishmentAbout({ workspace, businessHours }: Props) {
                     <circle cx="12" cy="7" r="4" />
                   </svg>
                   <div>
-                    <p className="text-xs text-gray-400 font-medium mb-1">Sobre</p>
+                    <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wide">Sobre</p>
                     <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{workspace.about}</p>
                   </div>
                 </div>
@@ -145,8 +162,8 @@ export function EstablishmentAbout({ workspace, businessHours }: Props) {
                     <polyline points="12 6 12 12 16 14" />
                   </svg>
                   <div className="flex-1">
-                    <p className="text-xs text-gray-400 font-medium mb-2">Horários de funcionamento</p>
-                    <div className="space-y-1.5">
+                    <p className="text-xs text-gray-400 font-medium mb-2 uppercase tracking-wide">Horários de funcionamento</p>
+                    <div className="space-y-2">
                       {DAY_LABELS.map((label, idx) => {
                         const entry = byDay[idx];
                         const isToday = idx === today;
@@ -159,18 +176,24 @@ export function EstablishmentAbout({ workspace, businessHours }: Props) {
                         return (
                           <div
                             key={idx}
-                            className={`flex justify-between text-sm ${isToday ? 'font-semibold text-gray-900' : 'text-gray-600'}`}
+                            className={`flex justify-between text-sm rounded-lg px-2 py-1 -mx-2 ${
+                              isToday ? 'bg-[var(--color-primary)]/6 font-semibold' : 'text-gray-600'
+                            }`}
                           >
                             <span className="flex items-center gap-1.5">
                               {isToday && (
-                                <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] flex-shrink-0" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] flex-shrink-0 animate-status-pulse" />
                               )}
-                              <span className={isToday ? '' : 'ml-3'}>
+                              <span className={isToday ? 'text-gray-900' : 'ml-3'}>
                                 {label}
                                 {isToday && <span className="text-[var(--color-primary)] ml-1 text-xs font-medium">(hoje)</span>}
                               </span>
                             </span>
-                            <span className={isClosed ? 'text-red-500' : isToday ? 'text-[var(--color-primary)]' : 'text-gray-700'}>
+                            <span className={
+                              isClosed ? 'text-red-500' :
+                              isToday ? 'text-[var(--color-primary)]' :
+                              'text-gray-700'
+                            }>
                               {isClosed ? 'Fechado' : timeRange}
                             </span>
                           </div>
@@ -189,7 +212,7 @@ export function EstablishmentAbout({ workspace, businessHours }: Props) {
                     <circle cx="12" cy="10" r="3" />
                   </svg>
                   <div>
-                    <p className="text-xs text-gray-400 font-medium mb-1">Endereço</p>
+                    <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wide">Endereço</p>
                     {addressParts.map((part, i) => (
                       <p key={i} className="text-sm text-gray-700 leading-snug">{part}</p>
                     ))}
@@ -204,8 +227,8 @@ export function EstablishmentAbout({ workspace, businessHours }: Props) {
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.85a16 16 0 0 0 6.29 6.29l.95-.95a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
                   </svg>
                   <div>
-                    <p className="text-xs text-gray-400 font-medium mb-1">Telefone</p>
-                    <a href={`tel:${workspace.phone}`} className="text-sm text-gray-700 hover:text-[var(--color-primary)] transition-colors">
+                    <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wide">Telefone</p>
+                    <a href={`tel:${workspace.phone}`} className="text-sm text-gray-700 hover:text-[var(--color-primary)] transition-colors duration-150">
                       {workspace.phone}
                     </a>
                   </div>
@@ -220,8 +243,8 @@ export function EstablishmentAbout({ workspace, businessHours }: Props) {
                     <polyline points="22,6 12,13 2,6" />
                   </svg>
                   <div>
-                    <p className="text-xs text-gray-400 font-medium mb-1">E-mail</p>
-                    <a href={`mailto:${workspace.email}`} className="text-sm text-gray-700 hover:text-[var(--color-primary)] transition-colors">
+                    <p className="text-xs text-gray-400 font-medium mb-1 uppercase tracking-wide">E-mail</p>
+                    <a href={`mailto:${workspace.email}`} className="text-sm text-gray-700 hover:text-[var(--color-primary)] transition-colors duration-150">
                       {workspace.email}
                     </a>
                   </div>
@@ -236,7 +259,7 @@ export function EstablishmentAbout({ workspace, businessHours }: Props) {
                     <line x1="1" y1="10" x2="23" y2="10" />
                   </svg>
                   <div>
-                    <p className="text-xs text-gray-400 font-medium mb-2">Formas de pagamento</p>
+                    <p className="text-xs text-gray-400 font-medium mb-2 uppercase tracking-wide">Formas de pagamento</p>
                     <div className="flex flex-wrap gap-1.5">
                       {workspace.accepted_payment_methods.map((method) => (
                         <span

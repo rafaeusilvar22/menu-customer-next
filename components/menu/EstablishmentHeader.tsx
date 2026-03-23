@@ -40,7 +40,7 @@ export function EstablishmentHeader({ workspace, businessHours = [] }: Props) {
             alt={`Banner ${workspace.name}`}
             fill
             sizes="100vw"
-            className="object-cover"
+            className="object-cover scale-[1.02] transition-transform duration-700 hover:scale-100"
             priority
           />
         ) : workspace.logo ? (
@@ -49,22 +49,28 @@ export function EstablishmentHeader({ workspace, businessHours = [] }: Props) {
             alt={workspace.name}
             fill
             sizes="100vw"
-            className="object-cover opacity-25"
+            className="object-cover opacity-20"
             priority
           />
         ) : null}
+
         {/* Gradient scrim */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
 
         {/* Open/Closed badge */}
         <div className="absolute top-4 right-4">
           <span
-            className={`inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full font-semibold backdrop-blur-sm ${
-              isOpen ? 'bg-green-500/80 text-white' : 'bg-red-500/70 text-white'
-            }`}
+            className={`
+              inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full font-semibold
+              backdrop-blur-md border
+              ${isOpen
+                ? 'bg-green-500/80 border-green-400/30 text-white'
+                : 'bg-gray-900/70 border-white/10 text-gray-200'
+              }
+            `}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-white" />
-            {isOpen ? 'Aberto' : 'Fechado'}
+            <span className={`w-1.5 h-1.5 rounded-full ${isOpen ? 'bg-green-300 animate-status-pulse' : 'bg-gray-400'}`} />
+            {isOpen ? 'Aberto agora' : 'Fechado'}
           </span>
         </div>
       </div>
@@ -73,7 +79,7 @@ export function EstablishmentHeader({ workspace, businessHours = [] }: Props) {
       <div className="bg-white px-4 lg:px-6 pt-3 pb-4 shadow-sm max-w-[1240px] mx-auto w-full">
         <div className="flex items-start gap-3">
           {/* Avatar overlapping cover */}
-          <div className="relative -mt-10 w-16 h-16 flex-shrink-0 rounded-2xl border-2 border-white shadow-md overflow-hidden bg-gray-100">
+          <div className="relative -mt-10 w-16 h-16 flex-shrink-0 rounded-2xl border-2 border-white shadow-lg overflow-hidden bg-gray-100 ring-1 ring-black/5">
             {workspace.logo ? (
               <Image
                 src={workspace.logo}
@@ -92,7 +98,7 @@ export function EstablishmentHeader({ workspace, businessHours = [] }: Props) {
           <div className="flex-1 min-w-0 pt-1">
             <h1 className="text-lg font-bold text-gray-900 leading-tight truncate">{workspace.name}</h1>
             {workspace.description && (
-              <p className="text-gray-400 text-xs mt-0.5 line-clamp-2">{workspace.description}</p>
+              <p className="text-gray-400 text-xs mt-0.5 line-clamp-2 leading-relaxed">{workspace.description}</p>
             )}
           </div>
         </div>
@@ -101,8 +107,8 @@ export function EstablishmentHeader({ workspace, businessHours = [] }: Props) {
         {(workspace.delivery_enabled || workspace.avg_preparation_time || workspace.min_order_amount) && (
           <div className="mt-3 flex flex-wrap gap-2">
             {workspace.avg_preparation_time && (
-              <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-full px-3 py-1.5 font-medium">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-full px-3 py-1.5 font-medium hover:bg-gray-100 transition-colors duration-150">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10" />
                   <polyline points="12 6 12 12 16 14" />
                 </svg>
@@ -110,8 +116,8 @@ export function EstablishmentHeader({ workspace, businessHours = [] }: Props) {
               </span>
             )}
             {workspace.delivery_enabled && workspace.delivery_fee != null && (
-              <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-full px-3 py-1.5 font-medium">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-full px-3 py-1.5 font-medium hover:bg-gray-100 transition-colors duration-150">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="1" y="3" width="15" height="13" rx="2" />
                   <path d="M16 8h4l3 5v4h-7V8z" />
                   <circle cx="5.5" cy="18.5" r="2.5" />
@@ -121,8 +127,8 @@ export function EstablishmentHeader({ workspace, businessHours = [] }: Props) {
               </span>
             )}
             {workspace.min_order_amount != null && Number(workspace.min_order_amount) > 0 && (
-              <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-full px-3 py-1.5 font-medium">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <span className="inline-flex items-center gap-1.5 text-xs text-gray-600 bg-gray-50 border border-gray-100 rounded-full px-3 py-1.5 font-medium hover:bg-gray-100 transition-colors duration-150">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="9" cy="21" r="1" />
                   <circle cx="20" cy="21" r="1" />
                   <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
