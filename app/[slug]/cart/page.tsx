@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/hooks/useCart';
 import { useEstablishment } from '@/hooks/useEstablishment';
@@ -34,6 +34,10 @@ export default function CartPage({ params }: Props) {
     delivery_type: 'pickup',
     payment_method: 'pix',
   });
+  // true when lat/lon were set programmatically (GPS or explicit geocode); prevents the
+  // address-change effect from re-geocoding and overwriting accurate coordinates.
+  const coordsPinnedRef = useRef(false);
+
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [blockedByOrder, setBlockedByOrder] = useState<string | null>(null);
@@ -61,32 +65,6 @@ export default function CartPage({ params }: Props) {
   const discount = coupon?.discount_amount ?? 0;
   const total = subtotal + deliveryFee - discount;
 
-  // Haversine distance in km between two coordinates
-  const haversineKm = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 6371;
-    const dLat = (lat2 - lat1) * (Math.PI / 180);
-    const dLon = (lon2 - lon1) * (Math.PI / 180);
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) ** 2;
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  };
-
-  const deliveryRadiusError = (() => {
-    if (form.delivery_type !== 'delivery') return null;
-    if (!workspace?.latitude || !workspace?.longitude || !workspace?.delivery_radius_km) return null;
-    if (!form.delivery_latitude || !form.delivery_longitude) return null;
-    const dist = haversineKm(
-      workspace.latitude,
-      workspace.longitude,
-      form.delivery_latitude,
-      form.delivery_longitude,
-    );
-    if (dist > workspace.delivery_radius_km) {
-      return 'No momento, este restaurante não atende a sua região de entrega.';
-    }
-    return null;
-  })();
 
   const handleApplyCoupon = async () => {
     const code = couponInput.trim().toUpperCase();
@@ -119,8 +97,6 @@ export default function CartPage({ params }: Props) {
 
   const handleCheckout = async () => {
     if (!cart || cart.items.length === 0) return;
-    if (deliveryRadiusError) { setError(deliveryRadiusError); return; }
-
     const nameVal = form.customer_name?.trim() ?? '';
     const phoneDigits = (form.customer_phone ?? '').replace(/\D/g, '');
     const errors: { name?: string; phone?: string } = {};
@@ -150,6 +126,7 @@ export default function CartPage({ params }: Props) {
   const handleGetLocation = async () => {
     const result = await getLocation();
     if (!result) return;
+    coordsPinnedRef.current = true;
     setForm((f) => ({
       ...f,
       delivery_latitude: result.latitude,
@@ -162,6 +139,13 @@ export default function CartPage({ params }: Props) {
     if (form.delivery_type !== 'delivery') return;
     const address = form.delivery_address ?? '';
     if (address.length < 8) return;
+
+    // Skip geocoding when coords were pinned programmatically (GPS).
+    // Reset the pin so that subsequent manual edits trigger geocoding again.
+    if (coordsPinnedRef.current) {
+      coordsPinnedRef.current = false;
+      return;
+    }
 
     const timer = setTimeout(async () => {
       const coords = await geocodeAddress(address);
@@ -407,22 +391,13 @@ export default function CartPage({ params }: Props) {
 
                 <input
                   value={form.delivery_address ?? ''}
-                  onChange={(e) => setForm((f) => ({ ...f, delivery_address: e.target.value }))}
+                  onChange={(e) => {
+                    coordsPinnedRef.current = false;
+                    setForm((f) => ({ ...f, delivery_address: e.target.value, delivery_latitude: undefined, delivery_longitude: undefined }));
+                  }}
                   placeholder="Rua, número, bairro"
-                  className={`w-full border rounded-2xl px-4 py-3 text-sm focus:outline-none transition-all duration-150 bg-gray-50/50 placeholder:text-gray-300 ${
-                    deliveryRadiusError
-                      ? 'border-red-300 focus:border-red-400 focus:ring-3 focus:ring-red-100'
-                      : 'border-gray-200 focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary)]/10'
-                  }`}
+                  className="w-full border rounded-2xl px-4 py-3 text-sm focus:outline-none transition-all duration-150 bg-gray-50/50 placeholder:text-gray-300 border-gray-200 focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary)]/10"
                 />
-                {deliveryRadiusError && (
-                  <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0">
-                      <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
-                    </svg>
-                    {deliveryRadiusError}
-                  </p>
-                )}
               </div>
             )}
 
@@ -569,7 +544,7 @@ export default function CartPage({ params }: Props) {
             <Button
               onClick={handleCheckout}
               loading={submitting}
-              disabled={!!deliveryRadiusError}
+              disabled={submitting}
               className="w-full py-4 text-base rounded-2xl font-bold"
             >
               Finalizar pedido · {formatCurrency(total)}
