@@ -24,9 +24,7 @@ export function formatCurrency(value: number): string {
 
 export const ORDER_STATUS_LABELS: Record<string, string> = {
   pending: 'Pendente',
-  confirmed: 'Confirmado',
   preparing: 'Preparando',
-  ready: 'Pronto',
   delivering: 'Saiu para entrega',
   delivered: 'Entregue',
   cancelled: 'Cancelado',

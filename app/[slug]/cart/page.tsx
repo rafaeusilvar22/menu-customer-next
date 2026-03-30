@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useEffect, useRef, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCart } from '@/hooks/useCart';
 import { useEstablishment } from '@/hooks/useEstablishment';
@@ -14,7 +14,7 @@ import { formatCurrency, formatPhone, DELIVERY_TYPE_LABELS, PAYMENT_METHOD_LABEL
 import { slugApi } from '@/lib/api';
 import { getCartToken, clearCartToken } from '@/lib/cart-token';
 import { getActiveOrder, setActiveOrder } from '@/lib/active-order';
-import { useGeolocation } from '@/hooks/useGeolocation';
+import { DeliveryAddressMap, LocationResult } from '@/components/cart/DeliveryAddressMap';
 import { CheckoutPayload, CouponValidationResult, DeliveryType, PaymentMethod } from '@/types/order';
 import { Product } from '@/types/product';
 
@@ -34,16 +34,20 @@ export default function CartPage({ params }: Props) {
     delivery_type: 'pickup',
     payment_method: 'pix',
   });
-  // true when lat/lon were set programmatically (GPS or explicit geocode); prevents the
-  // address-change effect from re-geocoding and overwriting accurate coordinates.
-  const coordsPinnedRef = useRef(false);
+
+  // Structured delivery address fields
+  const [deliveryPin, setDeliveryPin] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [deliveryStreet, setDeliveryStreet] = useState('');
+  const [deliveryNumber, setDeliveryNumber] = useState('');
+  const [deliveryComplement, setDeliveryComplement] = useState('');
+  const [deliveryReference, setDeliveryReference] = useState('');
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [blockedByOrder, setBlockedByOrder] = useState<string | null>(null);
   const [addingRec, setAddingRec] = useState<number | null>(null);
 
-  const [fieldErrors, setFieldErrors] = useState<{ name?: string; phone?: string }>({});
+  const [fieldErrors, setFieldErrors] = useState<{ name?: string; phone?: string; deliveryPin?: string; deliveryNumber?: string }>({});
 
   const [couponInput, setCouponInput] = useState('');
   const [coupon, setCoupon] = useState<CouponValidationResult | null>(null);
@@ -51,7 +55,6 @@ export default function CartPage({ params }: Props) {
   const [couponLoading, setCouponLoading] = useState(false);
 
   const recommendations = useCartRecommendations(slug, cart?.items ?? []);
-  const { getLocation, status: geoStatus, error: geoError, geocodeAddress, geocodeStatus } = useGeolocation();
 
   useEffect(() => {
     fetchCart(slug);
@@ -99,26 +102,37 @@ export default function CartPage({ params }: Props) {
     if (!cart || cart.items.length === 0) return;
     const nameVal = form.customer_name?.trim() ?? '';
     const phoneDigits = (form.customer_phone ?? '').replace(/\D/g, '');
-    const errors: { name?: string; phone?: string } = {};
+    const errors: { name?: string; phone?: string; deliveryPin?: string; deliveryNumber?: string } = {};
     if (!nameVal) errors.name = 'Informe seu nome.';
     if (phoneDigits.length < 10) errors.phone = 'Informe um telefone válido.';
+    if (form.delivery_type === 'delivery') {
+      if (!deliveryPin) errors.deliveryPin = 'Marque o local de entrega no mapa.';
+      if (!deliveryNumber.trim()) errors.deliveryNumber = 'Informe o número.';
+    }
     if (Object.keys(errors).length > 0) { setFieldErrors(errors); return; }
     setFieldErrors({});
-
-    if (
-      form.delivery_type === 'delivery' &&
-      workspace?.latitude != null &&
-      (!form.delivery_latitude || !form.delivery_longitude)
-    ) {
-      setError('Aguarde a localização do endereço ser identificada ou use o GPS.');
-      return;
-    }
-
     setError('');
+
+    const deliveryAddress = [
+      deliveryStreet,
+      deliveryNumber.trim(),
+      deliveryComplement.trim(),
+      deliveryReference.trim() && `Ref: ${deliveryReference.trim()}`,
+    ].filter(Boolean).join(', ');
+
+    const payload: CheckoutPayload = {
+      ...form,
+      ...(form.delivery_type === 'delivery' && {
+        delivery_address: deliveryAddress,
+        delivery_latitude: deliveryPin?.latitude,
+        delivery_longitude: deliveryPin?.longitude,
+      }),
+    };
+
     setSubmitting(true);
     try {
       const token = getCartToken(slug);
-      const result = await slugApi(slug).checkout(token, form);
+      const result = await slugApi(slug).checkout(token, payload);
       clearCartToken(slug);
       setActiveOrder(slug, result.order_uuid);
       if (form.customer_name?.trim()) {
@@ -131,48 +145,6 @@ export default function CartPage({ params }: Props) {
       setSubmitting(false);
     }
   };
-
-  const handleGetLocation = async () => {
-    const result = await getLocation();
-    if (!result) return;
-    coordsPinnedRef.current = true;
-    setForm((f) => ({
-      ...f,
-      delivery_latitude: result.latitude,
-      delivery_longitude: result.longitude,
-      delivery_address: result.address || f.delivery_address,
-    }));
-  };
-
-  useEffect(() => {
-    if (form.delivery_type !== 'delivery') return;
-    const address = form.delivery_address ?? '';
-    if (address.length < 8) return;
-
-    // Skip geocoding when coords were pinned programmatically (GPS).
-    // Reset the pin so that subsequent manual edits trigger geocoding again.
-    if (coordsPinnedRef.current) {
-      coordsPinnedRef.current = false;
-      return;
-    }
-
-    const controller = new AbortController();
-    const timer = setTimeout(async () => {
-      const coords = await geocodeAddress(address, controller.signal);
-      if (coords) {
-        setForm((f) => ({
-          ...f,
-          delivery_latitude: coords.latitude,
-          delivery_longitude: coords.longitude,
-        }));
-      }
-    }, 800);
-
-    return () => {
-      clearTimeout(timer);
-      controller.abort();
-    };
-  }, [form.delivery_address, form.delivery_type]);
 
   const handleClear = async () => {
     if (!confirm('Limpar o carrinho?')) return;
@@ -363,53 +335,63 @@ export default function CartPage({ params }: Props) {
             )}
 
             {form.delivery_type === 'delivery' && (
-              <div>
-                <label className="text-xs font-semibold text-gray-500 block mb-1.5 uppercase tracking-wide">Endereço de entrega</label>
+              <div className="space-y-3">
+                <label className="text-xs font-semibold text-gray-500 block uppercase tracking-wide">Local de entrega</label>
 
-                <button
-                  type="button"
-                  onClick={handleGetLocation}
-                  disabled={geoStatus === 'loading'}
-                  className="w-full mb-2 flex items-center justify-center gap-2 border border-dashed border-[var(--color-primary)]/60 text-[var(--color-primary)] rounded-2xl py-3 text-sm font-semibold disabled:opacity-50 hover:bg-[var(--color-primary)]/8 active:scale-[0.98] transition-all duration-150 bg-[var(--color-primary)]/4"
-                >
-                  {geoStatus === 'loading' ? (
-                    <>
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
-                        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                      </svg>
-                      Obtendo localização...
-                    </>
-                  ) : geoStatus === 'success' ? (
-                    <>
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                      Localização obtida
-                    </>
-                  ) : (
-                    <>
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="12" cy="10" r="3" />
-                        <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z" />
-                      </svg>
-                      Usar minha localização
-                    </>
-                  )}
-                </button>
+                {workspace?.latitude != null && workspace?.longitude != null ? (
+                  <>
+                    <DeliveryAddressMap
+                      workspaceLat={workspace.latitude as number}
+                      workspaceLon={workspace.longitude as number}
+                      onLocationChange={(result: LocationResult) => {
+                        setDeliveryPin({ latitude: result.latitude, longitude: result.longitude });
+                        setDeliveryStreet(result.street);
+                        setFieldErrors((fe) => ({ ...fe, deliveryPin: undefined }));
+                      }}
+                    />
+                    {fieldErrors.deliveryPin && (
+                      <p className="text-xs text-red-500">{fieldErrors.deliveryPin}</p>
+                    )}
 
-                {geoError && (
-                  <p className="text-xs text-red-500 mb-2">{geoError}</p>
+                    {deliveryStreet && (
+                      <p className="text-xs text-gray-500 flex items-center gap-1">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <circle cx="12" cy="10" r="3" /><path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z" />
+                        </svg>
+                        {deliveryStreet}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2">
+                    O estabelecimento ainda não configurou o endereço de entrega.
+                  </p>
                 )}
 
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <input
+                      value={deliveryNumber}
+                      onChange={(e) => { setDeliveryNumber(e.target.value); setFieldErrors((fe) => ({ ...fe, deliveryNumber: undefined })); }}
+                      placeholder="Número *"
+                      inputMode="numeric"
+                      className={`w-full border rounded-2xl px-4 py-3 text-sm focus:outline-none transition-all duration-150 bg-gray-50/50 placeholder:text-gray-300 ${fieldErrors.deliveryNumber ? 'border-red-300 focus:border-red-400 focus:ring-3 focus:ring-red-100' : 'border-gray-200 focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary)]/10'}`}
+                    />
+                    {fieldErrors.deliveryNumber && <p className="text-xs text-red-500 mt-1">{fieldErrors.deliveryNumber}</p>}
+                  </div>
+                  <input
+                    value={deliveryComplement}
+                    onChange={(e) => setDeliveryComplement(e.target.value)}
+                    placeholder="Complemento"
+                    className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary)]/10 transition-all duration-150 bg-gray-50/50 placeholder:text-gray-300"
+                  />
+                </div>
 
                 <input
-                  value={form.delivery_address ?? ''}
-                  onChange={(e) => {
-                    coordsPinnedRef.current = false;
-                    setForm((f) => ({ ...f, delivery_address: e.target.value, delivery_latitude: undefined, delivery_longitude: undefined }));
-                  }}
-                  placeholder="Rua, número, bairro"
-                  className="w-full border rounded-2xl px-4 py-3 text-sm focus:outline-none transition-all duration-150 bg-gray-50/50 placeholder:text-gray-300 border-gray-200 focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary)]/10"
+                  value={deliveryReference}
+                  onChange={(e) => setDeliveryReference(e.target.value)}
+                  placeholder="Ponto de referência (opcional)"
+                  className="w-full border border-gray-200 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-[var(--color-primary)] focus:ring-3 focus:ring-[var(--color-primary)]/10 transition-all duration-150 bg-gray-50/50 placeholder:text-gray-300"
                 />
               </div>
             )}

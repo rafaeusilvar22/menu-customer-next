@@ -13,14 +13,21 @@ export function useGeolocation() {
   const [error, setError] = useState<string | null>(null);
   const [geocodeStatus, setGeocodeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-  const geocodeAddress = useCallback(async (address: string, signal?: AbortSignal): Promise<{ latitude: number; longitude: number } | null> => {
+  const geocodeAddress = useCallback(async (
+    address: string,
+    signal?: AbortSignal,
+    biasLat?: number | null,
+    biasLon?: number | null
+  ): Promise<{ latitude: number; longitude: number } | null> => {
     if (!address.trim()) return null;
     setGeocodeStatus('loading');
     try {
-      const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&countrycodes=br`,
-        { headers: { 'Accept-Language': 'pt-BR' }, signal }
-      );
+      let url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&countrycodes=br`;
+      if (biasLat != null && biasLon != null) {
+        const delta = 1; // ~110km — cobre qualquer raio de entrega razoável
+        url += `&viewbox=${biasLon - delta},${biasLat + delta},${biasLon + delta},${biasLat - delta}&bounded=1`;
+      }
+      const res = await fetch(url, { headers: { 'Accept-Language': 'pt-BR' }, signal });
       const data = await res.json();
       if (!data || data.length === 0) {
         setGeocodeStatus('error');
