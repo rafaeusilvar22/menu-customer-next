@@ -13,13 +13,13 @@ export function useGeolocation() {
   const [error, setError] = useState<string | null>(null);
   const [geocodeStatus, setGeocodeStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-  const geocodeAddress = useCallback(async (address: string): Promise<{ latitude: number; longitude: number } | null> => {
+  const geocodeAddress = useCallback(async (address: string, signal?: AbortSignal): Promise<{ latitude: number; longitude: number } | null> => {
     if (!address.trim()) return null;
     setGeocodeStatus('loading');
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&countrycodes=br`,
-        { headers: { 'Accept-Language': 'pt-BR' } }
+        { headers: { 'Accept-Language': 'pt-BR' }, signal }
       );
       const data = await res.json();
       if (!data || data.length === 0) {
@@ -29,7 +29,8 @@ export function useGeolocation() {
       const { lat, lon } = data[0];
       setGeocodeStatus('success');
       return { latitude: parseFloat(lat), longitude: parseFloat(lon) };
-    } catch {
+    } catch (e: any) {
+      if (e?.name === 'AbortError') { setGeocodeStatus('idle'); return null; }
       setGeocodeStatus('error');
       return null;
     }

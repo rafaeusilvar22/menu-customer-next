@@ -105,6 +105,15 @@ export default function CartPage({ params }: Props) {
     if (Object.keys(errors).length > 0) { setFieldErrors(errors); return; }
     setFieldErrors({});
 
+    if (
+      form.delivery_type === 'delivery' &&
+      workspace?.latitude != null &&
+      (!form.delivery_latitude || !form.delivery_longitude)
+    ) {
+      setError('Aguarde a localização do endereço ser identificada ou use o GPS.');
+      return;
+    }
+
     setError('');
     setSubmitting(true);
     try {
@@ -147,8 +156,9 @@ export default function CartPage({ params }: Props) {
       return;
     }
 
+    const controller = new AbortController();
     const timer = setTimeout(async () => {
-      const coords = await geocodeAddress(address);
+      const coords = await geocodeAddress(address, controller.signal);
       if (coords) {
         setForm((f) => ({
           ...f,
@@ -158,7 +168,10 @@ export default function CartPage({ params }: Props) {
       }
     }, 800);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
   }, [form.delivery_address, form.delivery_type]);
 
   const handleClear = async () => {

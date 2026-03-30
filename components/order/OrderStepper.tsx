@@ -1,10 +1,16 @@
-import { OrderStatus } from '@/types/order';
+import { DeliveryType, OrderStatus } from '@/types/order';
 import { ORDER_STATUS_LABELS } from '@/lib/format';
 
-const STEPS: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready', 'delivering', 'delivered'];
+const ALL_STEPS: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready', 'delivering', 'delivered'];
+const STEPS_WITHOUT_DELIVERY: OrderStatus[] = ['pending', 'confirmed', 'preparing', 'ready', 'delivered'];
+
+function getSteps(deliveryType: DeliveryType): OrderStatus[] {
+  return deliveryType === 'delivery' ? ALL_STEPS : STEPS_WITHOUT_DELIVERY;
+}
 
 interface Props {
   status: OrderStatus;
+  deliveryType: DeliveryType;
 }
 
 function CheckIcon() {
@@ -33,6 +39,12 @@ const STEP_SUBTITLES: Record<OrderStatus, string> = {
   cancelled: '',
 };
 
+const READY_SUBTITLES: Record<DeliveryType, string> = {
+  delivery: 'Pronto! Aguardando o entregador',
+  pickup: 'Pronto! Pode retirar no balcão',
+  table: 'Pronto! Será servido na sua mesa em instantes',
+};
+
 const STEP_ICONS: Record<OrderStatus, string> = {
   pending: '🕐',
   confirmed: '✅',
@@ -43,7 +55,7 @@ const STEP_ICONS: Record<OrderStatus, string> = {
   cancelled: '❌',
 };
 
-export function OrderStepper({ status }: Props) {
+export function OrderStepper({ status, deliveryType }: Props) {
   if (status === 'cancelled') {
     return (
       <div className="bg-red-50 border border-red-100 rounded-2xl p-6 text-center animate-fade-in-up">
@@ -56,7 +68,8 @@ export function OrderStepper({ status }: Props) {
     );
   }
 
-  const currentIndex = STEPS.indexOf(status);
+  const steps = getSteps(deliveryType);
+  const currentIndex = steps.indexOf(status);
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 animate-fade-in-up">
@@ -65,10 +78,10 @@ export function OrderStepper({ status }: Props) {
       </p>
 
       <div>
-        {STEPS.map((step, i) => {
+        {steps.map((step, i) => {
           const done = i < currentIndex;
           const active = i === currentIndex;
-          const isLast = i === STEPS.length - 1;
+          const isLast = i === steps.length - 1;
 
           return (
             <div key={step} className="flex gap-4">
@@ -122,7 +135,7 @@ export function OrderStepper({ status }: Props) {
                 </div>
                 {active && (
                   <p className="text-xs text-[var(--color-primary)] mt-1 font-medium leading-snug">
-                    {STEP_SUBTITLES[step]}
+                    {step === 'ready' ? READY_SUBTITLES[deliveryType] : STEP_SUBTITLES[step]}
                   </p>
                 )}
               </div>

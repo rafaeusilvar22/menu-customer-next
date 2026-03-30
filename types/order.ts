@@ -30,6 +30,7 @@ export interface OrderItem {
 export interface Order {
   order_uuid: string;
   status: OrderStatus;
+  delivery_type: DeliveryType;
   total_amount: number;
   items: OrderItem[];
   created_at: string;
