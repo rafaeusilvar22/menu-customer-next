@@ -31,7 +31,7 @@ async function fetchCustomization(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const data = await fetchEstablishment(slug);
-  const name: string = data?.workspace?.name ?? 'Sabora';
+  const name: string = data?.workspace?.name ?? 'Fastmenu';
   const logo: string | null = data?.workspace?.logo ?? null;
   return {
     title: name,

@@ -6,7 +6,7 @@ import { QueryProvider } from '@/providers/QueryProvider';
 const geist = Geist({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Sabora',
+  title: 'Fastmenu',
   description: 'Faça seu pedido online',
 };
 
